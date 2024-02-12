@@ -1,7 +1,7 @@
 import java.util.*;
 
 /**
- * BPlusTreeInternal class stores N nodes and N+1 children pointers
+ * InternalNode class stores N keys and N+1 children pointers
  */
 public class InternalNode<K extends Comparable<K>, T> extends Node<K, T> {
     protected List<Node<K,T>> children;

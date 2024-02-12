@@ -1,5 +1,8 @@
 import java.util.*;
 
+/**
+ * LeafNode class stores the actual data
+ */
 public class LeafNode<K extends Comparable<K>, T> extends Node<K, T> {
     protected List<T> values;
     protected LeafNode<K, T> next;
@@ -23,7 +26,44 @@ public class LeafNode<K extends Comparable<K>, T> extends Node<K, T> {
         values = new ArrayList<T>(newValues);
     }
 
+    // Node value is unique
     public void insertSorted(K key, T value) {
-        // Find the index to insert
+        boolean isDuplicate = isDuplicated(key, value);
+        if (!isDuplicate) {
+            int l = 0;
+            int r = keys.size();
+
+            while (l < r) {
+                int m = l + (r - l) / 2;
+                if (keys.get(m).compareTo(key) < 0) {
+                    l = m + 1;
+                } else {
+                    r = m;
+                }
+            }
+
+            keys.add(l, key);
+            values.add(l, value);
+        }
+    }
+
+    public boolean isDuplicated(K key, T value) {
+        int l = 0;
+        int r = keys.size();
+
+        while (l < r) {
+            int m = l + (r - l) / 2;
+            if (keys.get(m).compareTo(key) == 0) {
+                keys.set(m, key);
+                values.set(m, value);
+                return true;
+            } else if (keys.get(m).compareTo(key) < 0) {
+                l = m + 1;
+            } else {
+                r = m;
+            }
+        }
+
+        return false;
     }
 }
