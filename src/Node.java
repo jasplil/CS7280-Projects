@@ -9,6 +9,6 @@ public class Node<K extends Comparable<K>, T> {
     protected List<K> keys;
 
     public boolean isOverflowed() {
-        return keys.size() > 2;
+        return keys.size() > BPlusTree.LEAF_ORDER - 1;
     }
 }
