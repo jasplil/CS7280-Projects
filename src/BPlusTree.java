@@ -1,5 +1,6 @@
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.LinkedBlockingQueue;
 
 public class BPlusTree<K extends Comparable<K>, T> {
     public Node<K, T> root;
@@ -21,45 +22,83 @@ public class BPlusTree<K extends Comparable<K>, T> {
         if (newEntry != null) {
             InternalNode<K, T> newRoot = new InternalNode<K, T>(newEntry.getKey(), root, newEntry.getValue());
             root = newRoot;
-
-            System.out.println("New Root: " + root.keys);
         }
 
         return;
     }
 
+    /**
+     * Get the entry to insert into the tree
+     * @param node
+     * @param entry
+     * @param newEntry
+     * @return
+     */
     private Entry<K, Node<K,T>> getEntry(Node<K,T> node, Entry<K, Node<K,T>> entry,
                                               Entry<K, Node<K,T>> newEntry) {
         if (node.isLeaf) {
-            return insertLeaf(node, entry, newEntry);
-        } else {
-            return insertInternal(node, entry, newEntry);
-        }
-    }
+            LeafNode<K, T> leafNode = (LeafNode<K, T>) node;
+            LeafNode<K, T> newLeafNode = (LeafNode<K, T>) entry.getValue();
 
-    public Entry<K, Node<K, T>> insertLeaf(Node<K, T> node, Map.Entry<K, Node<K,T>> entry,
-                                                   Map.Entry<K, Node<K,T>> newEntry) {
-        LeafNode<K, T> leafNode = (LeafNode<K, T>) node;
-        LeafNode<K, T> newLeafNode = (LeafNode<K, T>) entry.getValue();
+            // Directly insert the new child into the leaf node
+            leafNode.insertSorted(entry.getKey(), newLeafNode.values.get(0));
 
-        // Directly insert the new child into the leaf node
-        leafNode.insertSorted(entry.getKey(), newLeafNode.values.get(0));
+            // If the size is greater than LEAF_ORDER, split the leaf node
+            if (leafNode.isOverflowed()) {
+                newEntry = splitLeaf(leafNode);
+                if (leafNode == root) {
+                    InternalNode<K, T> newRoot = new InternalNode<>(newEntry.getKey(), leafNode, newEntry.getValue());
+                    root = newRoot;
+                    return null;
+                }
 
-        // If the size is greater than LEAF_ORDER, split the leaf node
-        if (leafNode.isOverflowed()) {
-            System.out.println("Overflowed: " + leafNode.keys);
-            newEntry = splitLeaf(leafNode);
-            System.out.println("New Leaf Node: " + newEntry.getValue().keys);
-            if (leafNode == root) {
-                InternalNode<K, T> newRoot = new InternalNode<>(newEntry.getKey(), leafNode, newEntry.getValue());
-                root = newRoot;
+                return newEntry;
+            } else {
                 return null;
             }
-
-            return newEntry;
         } else {
-            System.out.println("Leaf Node: " + leafNode.keys);
-            return null;
+            InternalNode<K,T> index = (InternalNode<K,T>) node;
+            int i = 0;
+            while (i < index.keys.size()) {
+                if(entry.getKey().compareTo(index.keys.get(i)) < 0) {
+                    break;
+                }
+                i++;
+            }
+            // Recursively, insert entry
+            newEntry = getEntry((Node<K,T>) index.children.get(i), entry, newEntry);
+
+            // No split occurred
+            if (newEntry == null) {
+                return null;
+            } else {
+                int j = 0;
+                while (j < index.keys.size()) {
+                    if (newEntry.getKey().compareTo(index.keys.get(j)) < 0) {
+                        break;
+                    }
+                    j++;
+                }
+
+                index.insertSorted(newEntry, j);
+
+                // Usual case, put newChildEntry on it, set newChildEntry to null, return
+                if (!index.isOverflowed()) {
+                    return null;
+                } else{
+                    newEntry = splitIndexNode(index);
+
+                    // Root was just split
+                    if (index == root) {
+                        // Create new node and make tree's root-node pointer point to newRoot
+                        InternalNode<K,T> newRoot = new InternalNode<K,T>(newEntry.getKey(), root,
+                                newEntry.getValue());
+                        root = newRoot;
+                        return null;
+                    }
+                    return newEntry;
+                }
+            }
         }
     }
 
@@ -98,53 +137,6 @@ public class BPlusTree<K extends Comparable<K>, T> {
         Entry<K, Node<K,T>> newEntry = new AbstractMap.SimpleEntry<>(splitKey, rightNode);
 
         return newEntry;
-    }
-
-    public Entry<K, Node<K, T>> insertInternal(Node<K, T> node, Map.Entry<K, Node<K,T>> entry,
-                                               Entry<K, Node<K,T>> newEntry) {
-        System.out.println("Internal Node: " + node.keys);
-        InternalNode<K,T> index = (InternalNode<K,T>) node;
-        int i = 0;
-        while(i < index.keys.size()) {
-            if(entry.getKey().compareTo(index.keys.get(i)) < 0) {
-                break;
-            }
-            i++;
-        }
-        // Recursively, insert entry
-        newEntry = getEntry((Node<K,T>) index.children.get(i), entry, newEntry);
-
-        // Usual case, didn't split child
-        if (newEntry == null) {
-            return null;
-        } else {
-            int j = 0;
-            while (j < index.keys.size()) {
-                if (newEntry.getKey().compareTo(index.keys.get(j)) < 0) {
-                    break;
-                }
-                j++;
-            }
-
-            index.insertSorted(newEntry, j);
-
-            // Usual case, put newChildEntry on it, set newChildEntry to null, return
-            if (!index.isOverflowed()) {
-                return null;
-            } else{
-                newEntry = splitIndexNode(index);
-
-                // Root was just split
-                if (index == root) {
-                    // Create new node and make tree's root-node pointer point to newRoot
-                    InternalNode<K,T> newRoot = new InternalNode<K,T>(newEntry.getKey(), root,
-                            newEntry.getValue());
-                    root = newRoot;
-                    return null;
-                }
-                return newEntry;
-            }
-        }
     }
 
     public Entry<K, Node<K,T>> splitIndexNode(InternalNode<K,T> index) {
@@ -212,5 +204,47 @@ public class BPlusTree<K extends Comparable<K>, T> {
         }
 
         return null;
+    }
+
+    public void printTree() {
+        LinkedBlockingQueue<Node<K,T>> queue;
+        root = this.root;
+        /* Create a queue to hold node pointers. */
+        queue = new LinkedBlockingQueue<Node<K,T>>();
+
+        int nodesInCurrentLevel = 1;
+        int nodesInNextLevel = 0;
+        ArrayList<Integer> childrenPerIndex = new ArrayList<Integer>();
+        queue.add(root);
+
+        while (!queue.isEmpty()) {
+            Node<K,T> target = queue.poll();
+            nodesInCurrentLevel--;
+            if (target.isLeaf) {
+                LeafNode<K,T> leaf = (LeafNode<K,T>) target;
+            } else {
+                InternalNode<K,T> index = ((InternalNode<K,T>) target);
+                System.out.println("Index: " + index.keys);
+                nodesInNextLevel += index.children.size();
+
+
+                for (Node<K, T> child : index.children) {
+                    if (child.isLeaf) {
+                        LeafNode<K, T> leafChild = (LeafNode<K, T>) child;
+                        System.out.println("Leaf child keys: " + leafChild.keys);
+                    } else {
+                        InternalNode<K, T> internalChild = (InternalNode<K, T>) child;
+                        System.out.println("Internal child keys: " + internalChild.keys);
+                        // If you want to add the internal nodes' children to the queue for further printing, you can do so:
+                        queue.addAll(internalChild.children);
+                    }
+                }
+            }
+
+            if (nodesInCurrentLevel == 0) {
+                nodesInCurrentLevel = nodesInNextLevel;
+                nodesInNextLevel = 0;
+            }
+        }
     }
 }
