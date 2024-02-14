@@ -4,7 +4,8 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class BPlusTree<K extends Comparable<K>, T> {
     public Node<K, T> root;
-    public static final int LEAF_ORDER = 4;
+    public static final int LEAF_ORDER = 3;
+    public static final int MIN_KEYS = (int) (Math.ceil(LEAF_ORDER / 2));
 
     public void insert(K key, T value) {
         LeafNode<K, T> leaf = new LeafNode<K, T>(key, value);
@@ -80,12 +81,14 @@ public class BPlusTree<K extends Comparable<K>, T> {
                     j++;
                 }
 
+                // Insert newChildEntry at index j
                 index.insertSorted(newEntry, j);
 
-                // Usual case, put newChildEntry on it, set newChildEntry to null, return
+                // If the index node is not overflowed, return null
                 if (!index.isOverflowed()) {
                     return null;
-                } else{
+                } else {
+                    // Split the index node
                     newEntry = splitIndexNode(index);
 
                     // Root was just split
@@ -96,6 +99,7 @@ public class BPlusTree<K extends Comparable<K>, T> {
                         root = newRoot;
                         return null;
                     }
+
                     return newEntry;
                 }
             }
@@ -112,17 +116,15 @@ public class BPlusTree<K extends Comparable<K>, T> {
         List<T> newValues = new ArrayList<>();
 
         // Add the second half of the keys and values to the new leaf node
-        for (int i = (int) Math.ceil(LEAF_ORDER / 2); i < LEAF_ORDER; i++) {
+        for (int i = MIN_KEYS; i <= 2 * MIN_KEYS; i++) {
             newKeys.add(leafNode.keys.get(i));
             newValues.add(leafNode.values.get(i));
         }
 
         // Remove the second half of the keys and values from the original leaf node
-        int splitNode = (int) Math.ceil(LEAF_ORDER/2);   // to handle both even and odd nodes cases
-        // float splitNode =  Math.abs(LEAF_ORDER/2);   // here is the original code, seems like no difference after i ceil it
-        for (int i = splitNode; i < LEAF_ORDER; i++) {
-            leafNode.keys.remove(splitNode);
-            leafNode.values.remove(splitNode);
+        for (int i = MIN_KEYS; i <= 2 * MIN_KEYS; i++) {
+            leafNode.keys.remove(leafNode.keys.size() - 1);
+            leafNode.values.remove(leafNode.values.size() - 1);
         }
 
         // Create a new leaf node and link it to the parent leaf node
@@ -145,18 +147,17 @@ public class BPlusTree<K extends Comparable<K>, T> {
         ArrayList<K> newKeys = new ArrayList<K>();
         ArrayList<Node<K,T>> newChildren = new ArrayList<Node<K,T>>();
 
-        int minKeys = (int) Math.ceil((double) LEAF_ORDER / 2);
-        K splitKey = index.keys.get(minKeys);
-        index.keys.remove(minKeys);
+        K splitKey = index.keys.get(MIN_KEYS);
+        index.keys.remove(MIN_KEYS);
 
-        newChildren.add(index.children.get(minKeys + 1));
-        index.children.remove(minKeys + 1);
+        newChildren.add(index.children.get(MIN_KEYS + 1));
+        index.children.remove(MIN_KEYS + 1);
 
-        while (index.keys.size() > minKeys) {
-            newKeys.add(index.keys.get(minKeys));
-            index.keys.remove(minKeys);
-            newChildren.add(index.children.get(minKeys + 1));
-            index.children.remove(minKeys + 1);
+        while (index.keys.size() > MIN_KEYS) {
+            newKeys.add(index.keys.get(MIN_KEYS));
+            index.keys.remove(MIN_KEYS);
+            newChildren.add(index.children.get(MIN_KEYS + 1));
+            index.children.remove(MIN_KEYS + 1);
         }
 
         InternalNode<K,T> rightNode = new InternalNode<K,T>(newKeys, newChildren);
@@ -219,49 +220,20 @@ public class BPlusTree<K extends Comparable<K>, T> {
         throw new IllegalStateException("The B+ tree structure is invalid.");
     }
 
-//    private Node<K, T> internalSearch(Node<K, T> node, K key) {
-//        if (node.isLeaf) {
-//            return node;
-//        }
-//
-//        InternalNode<K,T> index = (InternalNode<K,T>)node;
-//
-//        if (key.compareTo(index.keys.get(0)) < 0) {
-//            return internalSearch((Node<K,T>)index.children.get(0), key);
-//        } else if (key.compareTo(index.keys.get(node.keys.size() - 1)) >= 0) {
-//            return internalSearch((Node<K,T>)index.children.get(index.children.size() - 1), key);
-//        } else {
-//            for (int i = 0; i < index.keys.size() - 1; i++) {
-//                if (key.compareTo(index.keys.get(i)) >= 0 && key.compareTo(index.keys.get(i + 1)) < 0) {
-//                    return internalSearch((Node<K,T>)index.children.get(i+1), key);
-//                }
-//            }
-//        }
-//
-//        return null;
-//    }
-
     public void printTree() {
         LinkedBlockingQueue<Node<K,T>> queue;
-        root = this.root;
-        /* Create a queue to hold node pointers. */
+        // Use bfs to print the tree
         queue = new LinkedBlockingQueue<Node<K,T>>();
-
-        int nodesInCurrentLevel = 1;
-        int nodesInNextLevel = 0;
-        ArrayList<Integer> childrenPerIndex = new ArrayList<Integer>();
         queue.add(root);
 
         while (!queue.isEmpty()) {
             Node<K,T> target = queue.poll();
-            nodesInCurrentLevel--;
             if (target.isLeaf) {
                 LeafNode<K,T> leaf = (LeafNode<K,T>) target;
+                System.out.println("Leaf: " + leaf.keys);
             } else {
                 InternalNode<K,T> index = ((InternalNode<K,T>) target);
                 System.out.println("Index: " + index.keys);
-                nodesInNextLevel += index.children.size();
-
                 for (Node<K, T> child : index.children) {
                     if (child.isLeaf) {
                         LeafNode<K, T> leafChild = (LeafNode<K, T>) child;
@@ -273,11 +245,6 @@ public class BPlusTree<K extends Comparable<K>, T> {
                         queue.addAll(internalChild.children);
                     }
                 }
-            }
-
-            if (nodesInCurrentLevel == 0) {
-                nodesInCurrentLevel = nodesInNextLevel;
-                nodesInNextLevel = 0;
             }
         }
     }

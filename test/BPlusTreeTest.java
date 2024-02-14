@@ -8,13 +8,17 @@ public class BPlusTreeTest {
     public void testInsert() {
         BPlusTree<Integer, Integer> tree = new BPlusTree<>();
         tree.insert(5, 1);
+        tree.insert(18, 12);
         tree.insert(8, 36);
-        tree.insert(10, 38);
         tree.insert(15, 3);
+        tree.insert(10, 38);
+
         tree.insert(16, 35);
         tree.insert(17, 6);
-        tree.insert(18, 12);
+
         tree.insert(20, 12);
+
+        tree.printTree();
     }
 
     @Test
