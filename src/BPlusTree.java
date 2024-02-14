@@ -119,6 +119,7 @@ public class BPlusTree<K extends Comparable<K>, T> {
 
         // Remove the second half of the keys and values from the original leaf node
         int splitNode = (int) Math.ceil(LEAF_ORDER/2);   // to handle both even and odd nodes cases
+        // float splitNode =  Math.abs(LEAF_ORDER/2);   // here is the original code, seems like no difference after i ceil it
         for (int i = splitNode; i < LEAF_ORDER; i++) {
             leafNode.keys.remove(splitNode);
             leafNode.values.remove(splitNode);
