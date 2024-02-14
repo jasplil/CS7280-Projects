@@ -28,7 +28,7 @@ public class BPlusTreeTest {
     }
 
     @Test
-    public void testSearch() {
+    public void testDisplayWholeTree() {
         BPlusTree<Integer, Integer> tree = new BPlusTree<>();
         tree.insert(29, 1);
         tree.insert(41, 36);
@@ -48,6 +48,56 @@ public class BPlusTreeTest {
         tree.insert(45, 12);
 
         tree.printTree();
+    }
+
+    @Test
+    public void testSearch() {
+        BPlusTree<Integer, Integer> tree = new BPlusTree<>();
+        tree.insert(29, 1);
+        tree.insert(41, 36);
+        tree.insert(44, 38);
+        tree.insert(62, 3);
+        tree.insert(46, 35);
+        tree.insert(49, 6);
+        tree.insert(27, 12);
+        tree.insert(76, 12);
+        tree.insert(91, 12);
+        tree.insert(30, 12);
+        tree.insert(100, 12);
+        tree.insert(47, 12);
+        tree.insert(34, 12);
+        tree.insert(53, 12);
+        tree.insert(9, 12);
+        tree.insert(45, 12);
+
+        tree.search(45);
+        tree.search(49);
+        tree.search(62);
+    }
+
+    @Test
+    public void testDisplayNode() {
+        BPlusTree<Integer, Integer> tree = new BPlusTree<>();
+        tree.insert(29, 1);
+        tree.insert(41, 36);
+        tree.insert(44, 38);
+        tree.insert(62, 3);
+        tree.insert(46, 35);
+        tree.insert(49, 6);
+        tree.insert(27, 12);
+        tree.insert(76, 12);
+        tree.insert(91, 12);
+        tree.insert(30, 12);
+        tree.insert(100, 12);
+        tree.insert(47, 12);
+        tree.insert(34, 12);
+        tree.insert(53, 12);
+        tree.insert(9, 12);
+        tree.insert(45, 12);
+
+        tree.printTree();
+        tree.display(46);
+        tree.display(9);
     }
 
 }

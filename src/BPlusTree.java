@@ -4,7 +4,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class BPlusTree<K extends Comparable<K>, T> {
     public Node<K, T> root;
-    public static final int LEAF_ORDER = 5;
+    public static final int LEAF_ORDER = 4;
 
     public void insert(K key, T value) {
         LeafNode<K, T> leaf = new LeafNode<K, T>(key, value);
@@ -112,15 +112,16 @@ public class BPlusTree<K extends Comparable<K>, T> {
         List<T> newValues = new ArrayList<>();
 
         // Add the second half of the keys and values to the new leaf node
-        for (int i = Math.abs(LEAF_ORDER / 2); i < LEAF_ORDER; i++) {
+        for (int i = (int) Math.ceil(LEAF_ORDER / 2); i < LEAF_ORDER; i++) {
             newKeys.add(leafNode.keys.get(i));
             newValues.add(leafNode.values.get(i));
         }
 
         // Remove the second half of the keys and values from the original leaf node
-        for (int i = Math.abs(LEAF_ORDER / 2); i < LEAF_ORDER; i++) {
-            leafNode.keys.remove(LEAF_ORDER / 2);
-            leafNode.values.remove(LEAF_ORDER / 2);
+        int splitNode = (int) Math.ceil(LEAF_ORDER/2);   // to handle both even and odd nodes cases
+        for (int i = splitNode; i < LEAF_ORDER; i++) {
+            leafNode.keys.remove(splitNode);
+            leafNode.values.remove(splitNode);
         }
 
         // Create a new leaf node and link it to the parent leaf node
@@ -177,6 +178,8 @@ public class BPlusTree<K extends Comparable<K>, T> {
 
         for (int i = 0; i < leaf.keys.size(); i++) {
             if (key.compareTo(leaf.keys.get(i)) == 0) {
+                System.out.println("the key is " + leaf.keys.get(i) +
+                        ", the value is " + leaf.values.get(i).toString());
                 return leaf.values.get(i);
             }
         }
@@ -191,20 +194,51 @@ public class BPlusTree<K extends Comparable<K>, T> {
 
         InternalNode<K,T> index = (InternalNode<K,T>)node;
 
-        if (key.compareTo(index.keys.get(0)) < 0) {
-            return internalSearch((Node<K,T>)index.children.get(0), key);
-        } else if (key.compareTo(index.keys.get(node.keys.size() - 1)) >= 0) {
-            return internalSearch((Node<K,T>)index.children.get(index.children.size() - 1), key);
-        } else {
-            for (int i = 0; i < index.keys.size() - 1; i++) {
-                if (key.compareTo(index.keys.get(i)) >= 0 && key.compareTo(index.keys.get(i + 1)) < 0) {
-                    return internalSearch((Node<K,T>)index.children.get(i+1), key);
+        // Ensure we have keys before attempting to get them
+        if (index.keys.size() > 0) {
+            if (key.compareTo(index.keys.get(0)) < 0) {
+                return internalSearch((Node<K,T>)index.children.get(0), key);
+            } else if (key.compareTo(index.keys.get(index.keys.size() - 1)) >= 0) {
+                return internalSearch((Node<K,T>)index.children.get(index.children.size() - 1), key);
+            } else {
+                for (int i = 0; i < index.keys.size() - 1; i++) {
+                    if (key.compareTo(index.keys.get(i)) >= 0 && key.compareTo(index.keys.get(i + 1)) < 0) {
+                        return internalSearch((Node<K,T>)index.children.get(i+1), key);
+                    }
                 }
+            }
+        } else {
+            // If there are no keys, we can only go to the first child (if it exists)
+            if (!index.children.isEmpty()) {
+                return internalSearch((Node<K,T>)index.children.get(0), key);
             }
         }
 
-        return null;
+        // If we reach here, it means something is wrong with the tree structure.
+        throw new IllegalStateException("The B+ tree structure is invalid.");
     }
+
+//    private Node<K, T> internalSearch(Node<K, T> node, K key) {
+//        if (node.isLeaf) {
+//            return node;
+//        }
+//
+//        InternalNode<K,T> index = (InternalNode<K,T>)node;
+//
+//        if (key.compareTo(index.keys.get(0)) < 0) {
+//            return internalSearch((Node<K,T>)index.children.get(0), key);
+//        } else if (key.compareTo(index.keys.get(node.keys.size() - 1)) >= 0) {
+//            return internalSearch((Node<K,T>)index.children.get(index.children.size() - 1), key);
+//        } else {
+//            for (int i = 0; i < index.keys.size() - 1; i++) {
+//                if (key.compareTo(index.keys.get(i)) >= 0 && key.compareTo(index.keys.get(i + 1)) < 0) {
+//                    return internalSearch((Node<K,T>)index.children.get(i+1), key);
+//                }
+//            }
+//        }
+//
+//        return null;
+//    }
 
     public void printTree() {
         LinkedBlockingQueue<Node<K,T>> queue;
@@ -227,7 +261,6 @@ public class BPlusTree<K extends Comparable<K>, T> {
                 System.out.println("Index: " + index.keys);
                 nodesInNextLevel += index.children.size();
 
-
                 for (Node<K, T> child : index.children) {
                     if (child.isLeaf) {
                         LeafNode<K, T> leafChild = (LeafNode<K, T>) child;
@@ -247,4 +280,58 @@ public class BPlusTree<K extends Comparable<K>, T> {
             }
         }
     }
+
+    public void display(K key) {
+        if (root == null) {
+            System.out.println("The tree is empty.");
+            return;
+        }
+
+        Node<K, T> node = findSubtree(root, key);
+        if (node != null) {
+            displaySubtree(node, 0); // Helper function to print the subtree
+        } else {
+            System.out.println("Key not found in the tree.");
+        }
+    }
+
+    private Node<K, T> findSubtree(Node<K, T> node, K key) {
+        if (node.isLeaf) {
+            LeafNode<K, T> leaf = (LeafNode<K, T>) node;
+            if (leaf.keys.contains(key)) {
+                return leaf;
+            }
+        } else {
+            InternalNode<K, T> internal = (InternalNode<K, T>) node;
+            for (int i = 0; i < internal.keys.size(); i++) {
+                if (key.compareTo(internal.keys.get(i)) < 0) {
+                    return findSubtree(internal.children.get(i), key);
+                }
+            }
+            if (key.compareTo(internal.keys.get(internal.keys.size() - 1)) >= 0) {
+                return findSubtree(internal.children.get(internal.children.size() - 1), key);
+            }
+        }
+        return null; // If the key is not found
+    }
+
+    private void displaySubtree(Node<K, T> node, int level) {
+        // Indentation for levels to represent the tree structure
+        String indentation = " ".repeat(level * 4); // 4 spaces per level
+
+        if (node instanceof InternalNode) {
+            InternalNode<K, T> internalNode = (InternalNode<K, T>) node;
+            System.out.println(indentation + "InternalNode keys: " + internalNode.keys);
+            for (Node<K, T> child : internalNode.children) {
+                displaySubtree(child, level + 1); // Recurse one level deeper
+            }
+        } else if (node instanceof LeafNode) {
+            LeafNode<K, T> leafNode = (LeafNode<K, T>) node;
+            System.out.println(indentation + "LeafNode keys: " + leafNode.keys);
+            // Optionally, print values if needed
+            // System.out.println(indentation + "LeafNode values: " + leafNode.values);
+        }
+    }
+
+
 }
