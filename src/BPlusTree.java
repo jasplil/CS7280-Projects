@@ -241,7 +241,7 @@ public class BPlusTree<K extends Comparable<K>, T> {
                     } else {
                         InternalNode<K, T> internalChild = (InternalNode<K, T>) child;
                         System.out.println("Internal child keys: " + internalChild.keys);
-                        // If you want to add the internal nodes' children to the queue for further printing, you can do so:
+                        // If we want to add the internal nodes' children to the queue for further printing, we can do so:
                         queue.addAll(internalChild.children);
                     }
                 }
@@ -263,20 +263,25 @@ public class BPlusTree<K extends Comparable<K>, T> {
         }
     }
 
+
     private Node<K, T> findSubtree(Node<K, T> node, K key) {
+        // if current node is a leaf node and contains the key, then return this leaf node
         if (node.isLeaf) {
             LeafNode<K, T> leaf = (LeafNode<K, T>) node;
             if (leaf.keys.contains(key)) {
                 return leaf;
             }
-        } else {
+        } else {  // current node is an internal node, not a leaf
             InternalNode<K, T> internal = (InternalNode<K, T>) node;
             for (int i = 0; i < internal.keys.size(); i++) {
+                // if the search key is less than the current key, then desired subtree is in the child pointer to the left of the tree
                 if (key.compareTo(internal.keys.get(i)) < 0) {
                     return findSubtree(internal.children.get(i), key);
                 }
             }
+            // if the key is >= to the last key in the internal node's keys, the desired subtree is in the rightmost child ponter of this internal node
             if (key.compareTo(internal.keys.get(internal.keys.size() - 1)) >= 0) {
+                // recursively search the rightmost subtree
                 return findSubtree(internal.children.get(internal.children.size() - 1), key);
             }
         }
