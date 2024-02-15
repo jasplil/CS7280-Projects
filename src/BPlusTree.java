@@ -4,7 +4,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 
 public class BPlusTree<K extends Comparable<K>, T> {
     public Node<K, T> root;
-    public static final int LEAF_ORDER = 3;
+    public static final int LEAF_ORDER = 5;
     public static final int MIN_KEYS = (int) (Math.ceil(LEAF_ORDER / 2));
 
     public void insert(K key, T value) {

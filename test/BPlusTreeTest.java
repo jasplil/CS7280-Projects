@@ -100,8 +100,8 @@ public class BPlusTreeTest {
         tree.insert(45, 12);
 
         tree.printTree();
-        tree.display(46);
-        tree.display(9);
+        // tree.display(49);
+        // tree.display(9);
     }
 
 }
