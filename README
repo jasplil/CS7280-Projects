@@ -1,26 +1,25 @@
 Ting Tang
 Wenqing Wu
 
-## Project overview
-Our B+ tree implementation can be used with any types of comparable keys and corresponding value
+## Project Overview
+Our B+ tree implementation can be used with any type of comparable keys and corresponding value
 
 ## Class explanation
-1. Index Nodes(internal nodes): that is not a leaf node which contain keys that act as separators to search
-all the way to the leaves. These keys doesn't contain actual data but serve as references to deeper internal nodes
+1. Index Nodes(internal nodes): These are not a leaf node that contains keys that act as separators to search
+all the way to the leaves. These keys don't contain actual data but reference deeper internal nodes
 or leaf nodes.
-2. internal child keys: these are the keys contained in the child nodes of an internal node,
-and it can also be internal node which does not contain tbe actual value
-3. Leaf child keys: the bottom most nodes of a b+tree and contain the actual data or pointers to the data. and all these
-nodes are linkedin together as linkedin list, when we conduct search function, it looks through the leaf keys to find
+2. internal child keys: these are the keys contained in the child nodes of an internal node, which does not contain tbe actual value
+3. Leaf child keys: the bottommost nodes of a b+tree and contain the actual data or pointers to the data. and all these
+nodes are linked together as a linked list, when we conduct search function, it looks through the leaf keys to find
 the desired data.
 
 here are 4 functions:
-1. insertion: insert key-value pairs while maintaining the propertities of B+ tree
-2. search: retreieve values associated with specific keys
+1. insertion: insert key-value pairs while maintaining the properties of B+ tree
+2. search: retrieve values associated with specific keys
 3. display tree: visualize the structure of the tree
 4. display node: visualize the subtree structure under that node
 
-to use instance of the B+ tree:
+to use an instance of the B+ tree:
 run `BPlusTree<Integer, String> tree = new BPlusTree<>();`
 
 to insert key-value pairs into the tree:
