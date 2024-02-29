@@ -2,7 +2,7 @@ Ting Tang
 Wenqing Wu
 
 # P2
-[image](https://github.com/jasplil/CS7280-P1/assets/39994190/5aad9931-452f-4f9b-88da-066f6811dcc9)
+![0](https://github.com/jasplil/CS7280-P1/assets/39994190/5aad9931-452f-4f9b-88da-066f6811dcc9)
 ----
 ## Project Overview
 Our B+ tree implementation can be used with any type of comparable keys and corresponding value
