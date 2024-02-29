@@ -65,8 +65,9 @@ The database starts with a single file of 1,024 Kbytes.
 The first block (header) stores the header information:
 - Database name
 - Directory (list of FCBs)
-- Free block bitmap (bit vector)
-- Remaining blocks store data and B+ Tree nodes.
+- Blocks status
+- Index file info
+- Others
 
 As records are added and the initial file fills up, additional files of 1,024 Kbytes are created to accommodate new data.
 The B+ tree index updates to reflect the location of blocks across all files, ensuring efficient data retrieval.
