@@ -33,12 +33,12 @@ We will be using a fixed-length of records. Consider a set of *movie* data, each
 Assume that each character occupies 1 byte, then one record is 135 bytes long. We would use 135 bytes out of 256 bytes, and leave the rest unused. We will allocate
 
 ```
-movieId *varchar* 0: {
+movieId *varchar* 0 (5): {
 	title *varchar*: "Toy Story (1995)" (80)
 	genre *varchar*: "Adventure|Children|Fantasy" (50)
 }
 
-movieId *varchar*: 2 (5): {
+movieId *varchar*: 1 (5): {
 	title *varchar*: "Jumanji (1995):" (80)
 	genre *varchar*: "Adventure|Children|Fantasy" (50)
 }
