@@ -53,9 +53,22 @@ Assume that each character occupies 1 byte, then one record is 135 bytes long. W
 
 ### Free block method
 
-**Linked free space management**
+**Linked free space management**: Free blocks are managed through a linked list, where each free block contains a pointer to the next free block.
 
 ### Overview of NoSQL database design
+
+The basic units, allocation method, free block method are stated in the above sections.
+To summarize:
+
+**File Structure and Growth**
+
+The database starts with a single file of 1,024 Kbytes. 
+As records are added and the initial file fills up, additional files of 1,024 Kbytes are created to accommodate new data.
+The B+ tree index updates to reflect the location of blocks across all files, ensuring efficient data retrieval.
+
+**B+ Tree Indexing**
+This indexing facilitates quick searching, as the database system can directly find the block containing the desired record, minimizing disk I/O operations.
+
 ![Design](https://github.com/jasplil/CS7280-P1/assets/39994190/a8a39633-dfce-4837-b643-681620336b97)
 ### Developing environment
 
