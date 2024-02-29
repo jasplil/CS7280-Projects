@@ -1,8 +1,9 @@
-Ting Tang
-Wenqing Wu
+**Author**: Ting Tang & Wenqing Wu
 
 # Project 2 design & proposal
 ### Basic units of the NoSQL Database
+**The overview design is in the later section*
+![Basic](https://github.com/jasplil/CS7280-P1/assets/39994190/5aad9931-452f-4f9b-88da-066f6811dcc9)
 **Initialization**
 
 Block size: 256 bytes
@@ -48,23 +49,18 @@ Assume that each character occupies 1 byte, then one record is 135 bytes long. W
 
 ### Allocation method
 
-Linked allocation: On insertion of a new record, we use the record pointed to by the header. We update the header pointer to point to the next available record.
+**Linked allocation**: On insertion of a new record, we use the record pointed to by the header. We update the header pointer to point to the next available record.
 
 ### Free block method
 
-Linked free space management
+**Linked free space management**
 
 ### Overview of NoSQL database design
-
+![Design](https://github.com/jasplil/CS7280-P1/assets/39994190/a8a39633-dfce-4837-b643-681620336b97)
 ### Developing environment
-
 Language: java
-
 IDE: Intellij
-
 Github: current repo
-**The overview design is in the later section*
-![0](https://github.com/jasplil/CS7280-P1/assets/39994190/5aad9931-452f-4f9b-88da-066f6811dcc9)
 ----
 # Project 1 Overview
 Our B+ tree implementation can be used with any type of comparable keys and corresponding value
