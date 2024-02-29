@@ -1,6 +1,6 @@
 Ting Tang
 Wenqing Wu
-![Logo](images/units.png)
+![Logo](src/images/units.png)
 
 ## Project Overview
 Our B+ tree implementation can be used with any type of comparable keys and corresponding value
