@@ -33,14 +33,12 @@ We will be using a fixed-length of records. Consider a set of *movie* data, each
 Assume that each character occupies 1 byte, then one record is 135 bytes long. We would use 135 bytes out of 256 bytes, and leave the rest unused. We will allocate
 
 ```
-0: {
-	movieId *varchar*: 1 (5)
+movieId *varchar* 0: {
 	title *varchar*: "Toy Story (1995)" (80)
 	genre *varchar*: "Adventure|Children|Fantasy" (50)
 }
 
-1: {
-	movieId *varchar*: 2 (5)
+movieId *varchar*: 2 (5): {
 	title *varchar*: "Jumanji (1995):" (80)
 	genre *varchar*: "Adventure|Children|Fantasy" (50)
 }
@@ -53,20 +51,28 @@ Assume that each character occupies 1 byte, then one record is 135 bytes long. W
 
 ### Free block method
 
-**Linked free space management**: Free blocks are managed through a linked list, where each free block contains a pointer to the next free block.
+**Bit vector**: Locate the bit in the bit vector corresponding to the block being freed.
+Set the bit value to 1. This indicates that the block is now available for allocation.
 
 ### Overview of NoSQL database design
 
-The basic units, allocation method, free block method are stated in the above sections.
+The basic structure, allocation method, free block method are stated in the above sections.
 To summarize:
 
 **File Structure and Growth**
 
-The database starts with a single file of 1,024 Kbytes. 
+The database starts with a single file of 1,024 Kbytes.
+The first block (header) stores the header information:
+- Database name
+- Directory (list of FCBs)
+- Free block bitmap (bit vector)
+- Remaining blocks store data and B+ Tree nodes.
+
 As records are added and the initial file fills up, additional files of 1,024 Kbytes are created to accommodate new data.
 The B+ tree index updates to reflect the location of blocks across all files, ensuring efficient data retrieval.
 
 **B+ Tree Indexing**
+
 This indexing facilitates quick searching, as the database system can directly find the block containing the desired record, minimizing disk I/O operations.
 
 ![Design](https://github.com/jasplil/CS7280-P1/assets/39994190/a8a39633-dfce-4837-b643-681620336b97)
