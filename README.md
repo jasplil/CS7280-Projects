@@ -58,9 +58,13 @@ Assume that each character occupies 1 byte, then one record is 135 bytes long. W
 ### Overview of NoSQL database design
 ![Design](https://github.com/jasplil/CS7280-P1/assets/39994190/a8a39633-dfce-4837-b643-681620336b97)
 ### Developing environment
+
 Language: java
+
 IDE: Intellij
+
 Github: current repo
+
 ----
 # Project 1 Overview
 Our B+ tree implementation can be used with any type of comparable keys and corresponding value
